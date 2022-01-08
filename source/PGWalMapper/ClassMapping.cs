@@ -4,7 +4,7 @@ namespace PGWalMapper {
     public class ClassMapping<TEvent> {
         private readonly WalConfigurationBuilder _builder;
 
-        public ClassMapping(WalConfigurationBuilder builder) {
+        internal ClassMapping(WalConfigurationBuilder builder) {
             _builder = builder;
         }
 

@@ -7,7 +7,7 @@ namespace PGWalMapper {
         private readonly ClassMapping<TEvent> _classMapping;
         private readonly WalConfigurationBuilder _builder;
 
-        public ColumnMapping(string columnName, ClassMapping<TEvent> classMapping, WalConfigurationBuilder builder) {
+        internal ColumnMapping(string columnName, ClassMapping<TEvent> classMapping, WalConfigurationBuilder builder) {
             _columnName = columnName;
             _classMapping = classMapping;
             _builder = builder;
