@@ -1,10 +1,17 @@
 namespace PGWalMapper {
     using System;
-    using System.Formats.Asn1;
+
+    using Npgsql;
 
     public class WalConfigurationBuilder {
-        public WalConfigurationBuilder WithConnectionString(string connectionString) {
-            return this;
+        private readonly NpgsqlConnection _connection;
+
+        public WalConfigurationBuilder(NpgsqlConnection connection) {
+            _connection = connection;
+        }
+
+        public WalConfigurationBuilder(string connectionString) {
+            _connection = new NpgsqlConnection(connectionString);
         }
 
         public ClassMapping<TEvent> Map<TEvent>() {

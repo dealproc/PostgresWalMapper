@@ -1,10 +1,11 @@
 ﻿namespace FluentConfiguration {
+    using Npgsql;
+
     using PGWalMapper;
 
     class Program {
         static void Main(string[] args) {
-            var listener = new WalConfigurationBuilder()
-                .WithConnectionString("")
+            var listener = new WalConfigurationBuilder("")
                 
                 .Map<AggregateMsgs.Insert>()
                 .ToTable("some_table_name")
@@ -40,7 +41,7 @@
             listener.Dispose();
 
 
-            new WalConfigurationBuilder()
+            new WalConfigurationBuilder(new NpgsqlConnection())
                 .On(_ => { })
                 .On<AggregateMsgs.Insert>(_ => { })
                 .Map<AggregateMsgs.Delete>()
