@@ -5,7 +5,7 @@
 
     class Program {
         static void Main(string[] args) {
-            var listener = new WalConfigurationBuilder("")
+            var listener = new WalConfigurationBuilder("").ForPublication("publication_name")
                 
                 .Map<AggregateMsgs.Insert>().ToTable("some_table_name").InSchema("some_schema").OnInsert()
                 .Column("").ToProperty(prop => prop.Id).AsConstructorArgument()
@@ -30,15 +30,6 @@
             listener.Connect();
             listener.Disconnect();
             listener.Dispose();
-
-
-            new WalConfigurationBuilder(new NpgsqlConnection())
-                .On(_ => { })
-                .On<AggregateMsgs.Insert>(_ => { })
-                .Map<AggregateMsgs.Delete>().ToTable("some_table_name").InSchema("some_schema").OnDelete()
-                .Column("").ToProperty(p => p.Col1)
-                .On(_ => { })
-                .Build();
         }
     }
 }
