@@ -1,23 +1,20 @@
 namespace FluentConfiguration {
     using System;
 
+
+
     public class AggregateMsgs {
-        public class Insert {
-            public Guid Id { get; set; }
-            public string Col1 { get; set; }
-            public string Col2 { get; set; }
+        public class Films {
+            public string Code { get; set; }
+            public string Title { get; set; }
+            public string Did { get; set; }
+            public DateTime DateProduced { get; set; }
+            public string Kind { get; set; }
         }
 
-        public class Update {
-            public Guid Id { get; set; }
-            public string Col1 { get; set; }
-            public string Col2 { get; set; }
-        }
-
-        public class Delete {
-            public Guid Id { get; set; }
-            public string Col1 { get; set; }
-            public string Col2 { get; set; }
+        public class Distributors {
+            public int Did { get; set; }
+            public string Name { get; set; }
         }
     }
 }

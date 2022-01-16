@@ -3,12 +3,14 @@ namespace PGWalMapper {
     using System.Collections.Generic;
     using System.Linq;
 
+    using Npgsql.Replication;
+
     public class WalConfigurationBuilder {
         private readonly string _connectionString;
         private string _publicationName;
         private string _slotName;
-        private readonly HashSet<IClassMapping> _classMaps = new();
-        private readonly HashSet<Action<object>> _actions = new();
+        private readonly Dictionary<Type, IClassMapping> _classMaps = new();
+        private readonly HashSet<ActionHandler> _actions = new();
 
         public WalConfigurationBuilder(string connectionString) {
             _connectionString = connectionString;
@@ -41,7 +43,7 @@ namespace PGWalMapper {
         /// <returns></returns>
         public ClassMapping<TEvent> Map<TEvent>() where TEvent : class {
             var cm = new ClassMapping<TEvent>(this);
-            _classMaps.Add(cm);
+            _classMaps.Add(typeof(TEvent), cm);
             return cm;
         }
 
@@ -51,10 +53,9 @@ namespace PGWalMapper {
         /// <param name="action"></param>
         /// <returns></returns>
         public WalConfigurationBuilder On(Action<object> action) {
-            _actions.Add(action);
+            _actions.Add(new ActionHandler(action));
             return this;
         }
-
 
         /// <summary>
         /// Think of this like the $all stream within EventStore.  Any insert/update/delete operation will call this method.
@@ -62,7 +63,7 @@ namespace PGWalMapper {
         /// <param name="action"></param>
         /// <returns></returns>
         public WalConfigurationBuilder On<TEvent>(Action<TEvent> action) {
-            _actions.Add(o => action((TEvent)o));
+            _actions.Add(new ActionHandler<TEvent>(action));
             return this;
         }
 
@@ -80,18 +81,21 @@ namespace PGWalMapper {
             if (_classMaps.Count == 0) exceptions.Add(new Exception("No classes have been mapped."));
 
             foreach (var cm in _classMaps) {
-                cm.Validate(exceptions);
+                cm.Value.Validate(exceptions);
             }
 
             if (exceptions.Count == 1) throw exceptions.First();
             if (exceptions.Count > 1) throw new AggregateException(exceptions);
 
+            var builders = _classMaps.Select(cm => new InstanceConstructor(cm.Key, cm.Value, null));
+
             return new WalListener(
-                _connectionString,
+                new LogicalReplicationConnection(_connectionString),
                 _publicationName,
                 _slotName,
-                _classMaps,
-                _actions);
+                builders,
+                _actions
+            );
         }
     }
 }

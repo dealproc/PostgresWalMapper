@@ -71,7 +71,7 @@ namespace PGWalMapper {
         /// </summary>
         /// <param name="columnName"></param>
         /// <returns></returns>
-        public ColumnMapping<TEvent> Column(string columnName) => new(columnName, _classMapping, _builder);
+        public ColumnMapping<TEvent> Column(string columnName) => _classMapping.Column(columnName);
 
         /// <summary>
         /// Starts a new class mapping definition.

@@ -1,22 +1,32 @@
 namespace PGWalMapper {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 
-    using Npgsql.Replication;
-    using Npgsql.Replication.PgOutput.Messages;
-
-    internal interface IClassMapping {
+    public interface IClassMapping {
+        public string TableName { get; }
+        public string SchemaName { get; }
+        ICollection<IColumnMapping> Columns { get; }
+        public IEnumerable<IColumnMapping> ColumnsOnConstructor { get; }
         public void Validate(List<Exception> possibleExceptions);
-        public bool Handle(ReplicationMessage msg);
+        // public bool Handle(ReplicationMessage msg);
     }
 
     public class ClassMapping<TEvent> : IClassMapping where TEvent : class {
         private readonly WalConfigurationBuilder _builder;
-        private readonly HashSet<ColumnMapping<TEvent>> _columnMappings = new();
-        private string _tableName;
+        private readonly OrderedSet<ColumnMapping<TEvent>> _columnMappings = new();
+        public string TableName { get; private set; }
+
         private string _schemaName;
-        private SqlCommandTypes _commandType = SqlCommandTypes.Unknown;
-        private IOperationHandler _operationHandler;
+
+        public string SchemaName {
+            get => string.IsNullOrWhiteSpace(_schemaName) ? "public" : _schemaName;
+            private set => _schemaName = value;
+        }
+
+
+        public ICollection<IColumnMapping> Columns => _columnMappings.Cast<IColumnMapping>().ToList();
+        public IEnumerable<IColumnMapping> ColumnsOnConstructor => _columnMappings.Where(cm => cm.SetOnConstructor);
 
         internal ClassMapping(WalConfigurationBuilder builder) {
             _builder = builder;
@@ -28,7 +38,7 @@ namespace PGWalMapper {
         /// <param name="tableName"></param>
         /// <returns></returns>
         public ClassMapping<TEvent> ToTable(string tableName) {
-            _tableName = tableName;
+            TableName = tableName;
             return this;
         }
 
@@ -39,34 +49,7 @@ namespace PGWalMapper {
         /// <param name="schemaName"></param>
         /// <returns></returns>
         public ClassMapping<TEvent> InSchema(string schemaName) {
-            _schemaName = schemaName;
-            return this;
-        }
-
-        /// <summary>
-        /// Defines that this class mapping is for insert operations.
-        /// </summary>
-        /// <returns></returns>
-        public ClassMapping<TEvent> OnInsert() {
-            _operationHandler = new InsertOperationHandler();
-            return this;
-        }
-
-        /// <summary>
-        /// Defines that this class mapping is for update operations.
-        /// </summary>
-        /// <returns></returns>
-        public ClassMapping<TEvent> OnUpdate() {
-            _operationHandler = new UpdateOperationHandler();
-            return this;
-        }
-
-        /// <summary>
-        /// Defines that this class mapping is for delete operations.
-        /// </summary>
-        /// <returns></returns>
-        public ClassMapping<TEvent> OnDelete() {
-            _operationHandler = new DeleteOperationHandler();
+            SchemaName = schemaName;
             return this;
         }
 
@@ -117,7 +100,6 @@ namespace PGWalMapper {
         public WalListener Build() => _builder.Build();
 
         public void Validate(List<Exception> possibleExceptions) {
-            if (_commandType == SqlCommandTypes.Unknown) possibleExceptions.Add(new Exception($"SQL Operation has not been set for '{typeof(TEvent).Name}'."));
             if (_columnMappings.Count == 0) {
                 possibleExceptions.Add(new Exception($"No columns have been mapped for {typeof(TEvent).Name}"));
                 return;
@@ -126,10 +108,6 @@ namespace PGWalMapper {
             foreach (var cm in _columnMappings) {
                 cm.Validate(possibleExceptions);
             }
-        }
-
-        public bool Handle(ReplicationMessage msg) {
-            return _operationHandler.Handle(msg);
         }
     }
 }
