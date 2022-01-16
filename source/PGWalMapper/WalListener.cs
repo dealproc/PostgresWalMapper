@@ -39,10 +39,12 @@ namespace PGWalMapper {
                                    new PgOutputReplicationOptions(_publicationName, 1),
                                    _tokenSource.Token)) {
                     Console.WriteLine("Got data...");
-                    foreach (var x in _instanceConstructors) {
+                    
+                    var constructor = _instanceConstructors.FirstOrDefault(ic => ic.CanCreateInstance(msg));
+                    if (constructor != null) {
                         try {
                             Console.WriteLine("Using constructor...");
-                            var ic = await x.CreateInstance(msg, _tokenSource.Token);
+                            var ic = await constructor.CreateInstance(msg, _tokenSource.Token);
                             Console.WriteLine("Possibly resolved an instance...");
                             if (ic != null) {
                                 _actions.Where(a => a.CanHandle(ic)).Apply(a => a.Handle(ic));
@@ -55,7 +57,6 @@ namespace PGWalMapper {
                             Console.WriteLine(exc.GetType().Name);
                         }
                     }
-
 
                     // to mark the WAL as completed.
                     _connection.SetReplicationStatus(msg.WalEnd);

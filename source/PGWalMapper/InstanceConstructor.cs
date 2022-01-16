@@ -55,6 +55,9 @@ namespace PGWalMapper {
             }
         }
 
+        private static readonly IEnumerable<Type> ImplementedMessageTypes = new[] { typeof(InsertMessage), typeof(UpdateMessage), typeof(FullDeleteMessage), typeof(KeyDeleteMessage) };
+        public bool CanCreateInstance(ReplicationMessage msg) => ImplementedMessageTypes.Any(imt => imt.IsInstanceOfType(msg));
+
         public async Task<object> CreateInstance(ReplicationMessage msg, CancellationToken token = default) {
             Console.WriteLine($"Object instance is being created...{msg.GetType().Name}");
             switch (msg) {
