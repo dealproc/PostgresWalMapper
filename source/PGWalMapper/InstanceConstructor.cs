@@ -29,9 +29,6 @@ namespace PGWalMapper {
             _propertyNameToColumn = cm.Columns.Select(c => new { c.ColumnName, c.PropertyName })
                 .ToDictionary(x => x.PropertyName, x => x.ColumnName);
             
-            Console.WriteLine($"Property Names: {_propertyNameToColumn.Keys.Aggregate((s1, s2) => $"{s1},{s2}")}");
-            Console.WriteLine($"Column Names: {_propertyNameToColumn.Values.Aggregate((s1, s2) => $"{s1},{s2}")}");
-
             if (cm.ColumnsOnConstructor.Any()) {
                 _createInstanceWithConstructorArgs = true;
 
@@ -59,19 +56,14 @@ namespace PGWalMapper {
         public bool CanCreateInstance(ReplicationMessage msg) => ImplementedMessageTypes.Any(imt => imt.IsInstanceOfType(msg));
 
         public async Task<object> CreateInstance(ReplicationMessage msg, CancellationToken token = default) {
-            Console.WriteLine($"Object instance is being created...{msg.GetType().Name}");
             switch (msg) {
                 case InsertMessage inserted:
-                    Console.WriteLine("Parsing inserted message");
                     return await Parse(inserted.Relation, inserted.NewRow, token);
                 case UpdateMessage updated:
-                    Console.WriteLine("Parsing updated message");
                     return await Parse(updated.Relation, updated.NewRow, token);
                 case FullDeleteMessage fullDelete:
-                    Console.WriteLine("Parsing deleted message");
                     return await Parse(fullDelete.Relation, fullDelete.OldRow, token);
                 case KeyDeleteMessage keyDelete:
-                    Console.WriteLine("Parsing deleted message");
                     return await Parse(keyDelete.Relation, keyDelete.Key, token);
             }
 
@@ -86,8 +78,6 @@ namespace PGWalMapper {
                 return null;
             }
             
-            Console.WriteLine("Found namespace/name");
-            
             object instance;
             var columns = rel.Columns.Select(c => c.ColumnName).ToArray();
             var columnValues = new Dictionary<string, object>();
@@ -95,11 +85,8 @@ namespace PGWalMapper {
             foreach (var c in columns) {
                 await dbColumnValues.MoveNextAsync();
                 columnValues.Add(c, await dbColumnValues.Current.Get(token));
-                Console.WriteLine($"Column name: {c}");
             }
             
-            Console.WriteLine("Pulled values");
-
             if (_createInstanceWithConstructorArgs) {
                 var parameterValues = new List<object>();
                 foreach (var cpa in _parameterNames) {
@@ -112,18 +99,13 @@ namespace PGWalMapper {
             } else {
                 instance = Activator.CreateInstance(_objectType);
             }
-            Console.WriteLine("Built instance.");
-
             // instance is now built
 
             // need to now populate its properties that are writable.
             var properties = instance.GetType().GetProperties().Where(p => p.CanWrite).ToArray();
-            Console.WriteLine($"Database Names: {columnValues.Keys.Aggregate((s1, s2)=> $"{s1}, {s2}")}");
-            Console.WriteLine($"Database Values: {columnValues.Values.Aggregate((s1, s2)=> $"{s1}, {s2}")}");
             foreach (var p in properties) {
                 var val = columnValues[_propertyNameToColumn[p.Name]];
                 if (val is DBNull) continue;
-                Console.WriteLine(val.ToString());
                 p.SetValue(instance, Convert.ChangeType(val, p.PropertyType));
             }
 
@@ -132,12 +114,9 @@ namespace PGWalMapper {
             foreach (var p in fields) {
                 var val = columnValues[_propertyNameToColumn[p.Name]];
                 if (val is DBNull) continue;
-                Console.WriteLine(val.ToString());
                 p.SetValue(instance, Convert.ChangeType(val, p.FieldType));
             }
             
-            Console.WriteLine("Assigned values");
-
             return instance;
         }
     }

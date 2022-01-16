@@ -33,23 +33,16 @@ namespace PGWalMapper {
             //TBD: Do we need to hold a reference to the task?
             Task.Run(async () => {
                 await _connection.Open();
-                Console.WriteLine("Connection has been opened.");
-
                 await foreach (var msg in _connection.StartReplication(new PgOutputReplicationSlot(_slotName),
                                    new PgOutputReplicationOptions(_publicationName, 1),
                                    _tokenSource.Token)) {
-                    Console.WriteLine("Got data...");
                     
                     var constructor = _instanceConstructors.FirstOrDefault(ic => ic.CanCreateInstance(msg));
                     if (constructor != null) {
                         try {
-                            Console.WriteLine("Using constructor...");
                             var ic = await constructor.CreateInstance(msg, _tokenSource.Token);
-                            Console.WriteLine("Possibly resolved an instance...");
                             if (ic != null) {
                                 _actions.Where(a => a.CanHandle(ic)).Apply(a => a.Handle(ic));
-                            } else {
-                                Console.WriteLine("Nothing to parse?");
                             }
                         }
                         catch (Exception exc) {
