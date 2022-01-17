@@ -34,6 +34,7 @@ INSERT INTO films(code, title, did, date_prod, kind) VALUES('OS', 'Office Space'
 UPDATE films SET title = 'Office Space 2' WHERE code = 'OS';
 UPDATE films SET kind = '123';
 DELETE FROM films WHERE code = 'GOON';
+DELETE FROM films;
 
 SELECT pg_drop_replication_slot('films_slot');
 DROP PUBLICATION films_pub

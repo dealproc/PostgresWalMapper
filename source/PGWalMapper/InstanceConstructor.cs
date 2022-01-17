@@ -13,7 +13,7 @@ namespace PGWalMapper {
 
     internal class InstanceConstructor {
         private readonly bool _createInstanceWithConstructorArgs;
-        private readonly List<string> _parameterNames = new();
+        private readonly Dictionary<string, Type> _parameterNames = new(StringComparer.OrdinalIgnoreCase);
         private readonly ILogger _logger;
         private readonly Type _objectType;
         private readonly string _schemaName;
@@ -27,8 +27,8 @@ namespace PGWalMapper {
             _tableName = cm.TableName;
 
             _propertyNameToColumn = cm.Columns.Select(c => new { c.ColumnName, c.PropertyName })
-                .ToDictionary(x => x.PropertyName, x => x.ColumnName);
-            
+                .ToDictionary(x => x.PropertyName, x => x.ColumnName, StringComparer.InvariantCultureIgnoreCase);
+
             if (cm.ColumnsOnConstructor.Any()) {
                 _createInstanceWithConstructorArgs = true;
 
@@ -38,17 +38,20 @@ namespace PGWalMapper {
                     var parameters = c.GetParameters();
 
                     var query = from colMap in cm.ColumnsOnConstructor
-                        join param in parameters on colMap.PropertyName equals param.Name into foundParam
+                        join param in parameters on colMap.PropertyName.ToUpperInvariant() equals param.Name?.ToUpperInvariant() into foundParam
                         from subParam in foundParam.DefaultIfEmpty()
                         select new { ColumnMap = colMap, ParameterMap = subParam };
 
                     if (query.All(q => q.ParameterMap != null)) {
                         // constructor looks legit.  let's extract out the parameters, and we'll be able to use this for name(s) of the value(s) of the passed record from pgsql
-                        _parameterNames.AddRange(parameters.Select(p => p.Name));
+                        parameters.Apply(x => _parameterNames.Add(x.Name, x.ParameterType));
                     }
                 }
 
-                if (_parameterNames.Count == 0) throw new Exception("Could not map constructor parameters to column mappings.");
+                if (_parameterNames.Count == 0) {
+                    _logger.LogCritical("Parameter names could not be resolved for '{@NameOfObject}'", objectType.Name);
+                    throw new Exception("Could not map constructor parameters to column mappings.");
+                }
             }
         }
 
@@ -77,21 +80,26 @@ namespace PGWalMapper {
                 _logger.LogWarning("Could not parse relation message for {@SchemaName} - {@TableName}", _schemaName, _tableName);
                 return null;
             }
-            
+
             object instance;
             var columns = rel.Columns.Select(c => c.ColumnName).ToArray();
-            var columnValues = new Dictionary<string, object>();
+            var columnValues = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase);
             var dbColumnValues = tuple.GetAsyncEnumerator(token);
             foreach (var c in columns) {
                 await dbColumnValues.MoveNextAsync();
                 columnValues.Add(c, await dbColumnValues.Current.Get(token));
             }
-            
+
+
             if (_createInstanceWithConstructorArgs) {
                 var parameterValues = new List<object>();
                 foreach (var cpa in _parameterNames) {
-                    if (columnValues.ContainsKey(cpa)) {
-                        parameterValues.Add(columnValues[cpa]);
+                    var columnName = _propertyNameToColumn[cpa.Key];
+                    if (columnValues.ContainsKey(columnName)) {
+                        var valueOfColumn = columnValues[columnName];
+                        parameterValues.Add(valueOfColumn is DBNull
+                            ? null
+                            : Convert.ChangeType(valueOfColumn, cpa.Value));
                     }
                 }
 
@@ -116,7 +124,7 @@ namespace PGWalMapper {
                 if (val is DBNull) continue;
                 p.SetValue(instance, Convert.ChangeType(val, p.FieldType));
             }
-            
+
             return instance;
         }
     }

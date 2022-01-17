@@ -24,7 +24,10 @@
         }
 
         private static void ConfigureServices(ServiceCollection services) {
-            services.AddLogging(cfg => cfg.AddConsole())
+            services.AddLogging(cfg => {
+                    cfg.AddConsole();
+                    cfg.SetMinimumLevel(LogLevel.Trace);
+                })
                 .AddTransient<Example>();
         }
     }
