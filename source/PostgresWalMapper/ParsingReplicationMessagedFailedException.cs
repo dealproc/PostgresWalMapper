@@ -1,4 +1,4 @@
-namespace PGWalMapper {
+namespace PostgresWalMapper {
     using System;
 
     public class ParsingReplicationMessagedFailedException : Exception {

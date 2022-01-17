@@ -1,4 +1,4 @@
-namespace PGWalMapper.Tests {
+namespace PostgresWalMapper.Tests {
     using System;
 
     public class InstanceConstructorTests {

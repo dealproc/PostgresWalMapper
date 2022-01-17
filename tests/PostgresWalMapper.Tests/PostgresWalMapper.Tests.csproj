@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\source\PGWalMapper\PGWalMapper.csproj" />
+    <ProjectReference Include="..\..\source\PostgresWalMapper\PostgresWalMapper.csproj" />
   </ItemGroup>
 
 </Project>

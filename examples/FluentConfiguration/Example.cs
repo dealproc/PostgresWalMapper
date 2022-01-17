@@ -4,7 +4,7 @@ namespace FluentConfiguration {
 
     using Microsoft.Extensions.Logging;
 
-    using PGWalMapper;
+    using PostgresWalMapper;
 
     public class Example {
         private readonly ILoggerFactory _loggerFactory;

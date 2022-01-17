@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "source", "source", "{90695C5B-1F07-4633-90B6-76C269DBFB83}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PGWalMapper", "source\PGWalMapper\PGWalMapper.csproj", "{431DE327-5120-43CB-B8CB-DE15C23FE730}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PGWalMapper", "source\PostgresWalMapper\PostgresWalMapper.csproj", "{431DE327-5120-43CB-B8CB-DE15C23FE730}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{13F62568-E7F7-4B9F-94C3-4BE42E0DEC6E}"
 EndProject
@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluentConfiguration", "exam
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B7FE97B6-3694-4CCC-AF20-12CB89F2B961}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PGWalMapper.Tests", "tests\PGWalMapper.Tests\PGWalMapper.Tests.csproj", "{2C849055-292C-4075-A8CC-C0325C6A0D1B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PGWalMapper.Tests", "tests\PostgresWalMapper.Tests\PostgresWalMapper.Tests.csproj", "{2C849055-292C-4075-A8CC-C0325C6A0D1B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

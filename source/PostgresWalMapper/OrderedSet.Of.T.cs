@@ -1,4 +1,4 @@
-namespace PGWalMapper {
+namespace PostgresWalMapper {
     using System.Collections;
     using System.Collections.Generic;
 
