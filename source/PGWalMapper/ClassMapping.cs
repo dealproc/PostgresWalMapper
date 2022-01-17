@@ -70,19 +70,18 @@ namespace PGWalMapper {
         /// </summary>
         /// <param name="action"></param>
         /// <returns></returns>
-        public ClassMapping<TEvent> On(Action<object> action) {
-            _builder.On(action);
+        public ClassMapping<TEvent> OnInsert(Action<TEvent> action) {
+            _builder.OnInsert(action);
             return this;
         }
 
-        /// <summary>
-        /// When a new record is found on the WAL, and the data has been mapped to a CLR object, this
-        /// then allows an ability to take an action on the built CLR object.
-        /// </summary>
-        /// <param name="action"></param>
-        /// <returns></returns>
-        public ClassMapping<TEvent> On(Action<TEvent> action) {
-            _builder.On(action);
+        public ClassMapping<TEvent> OnUpdate(Action<TEvent> action) {
+            _builder.OnUpdate(action);
+            return this;
+        }
+
+        public ClassMapping<TEvent> OnDelete(Action<TEvent> action) {
+            _builder.OnDelete(action);
             return this;
         }
 

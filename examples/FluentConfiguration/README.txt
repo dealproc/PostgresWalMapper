@@ -31,5 +31,9 @@ INSERT INTO films(code, title, did, date_prod, kind) VALUES('GRM', 'Gremlins', 1
 INSERT INTO films(code, title, did, date_prod, kind) VALUES('GRM2', 'Gremlins 2', 2, '2020-01-01', 'kind');
 INSERT INTO films(code, title, did, date_prod, kind) VALUES('OS', 'Office Space', 3, '2020-01-01', 'kind');
 
+UPDATE films SET title = 'Office Space 2' WHERE code = 'OS';
+UPDATE films SET kind = '123';
+DELETE FROM films WHERE code = 'GOON';
+
 SELECT pg_drop_replication_slot('films_slot');
 DROP PUBLICATION films_pub

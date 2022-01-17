@@ -10,7 +10,9 @@ namespace PGWalMapper {
         private string _publicationName;
         private string _slotName;
         private readonly Dictionary<Type, IClassMapping> _classMaps = new();
-        private readonly HashSet<ActionHandler> _actions = new();
+        private readonly HashSet<ActionHandler> _insertActions = new();
+        private readonly HashSet<ActionHandler> _updateActions = new();
+        private readonly HashSet<ActionHandler> _deleteActions = new();
 
         public WalConfigurationBuilder(string connectionString) {
             _connectionString = connectionString;
@@ -47,23 +49,33 @@ namespace PGWalMapper {
             return cm;
         }
 
-        /// <summary>
-        /// Think of this like the $all stream within EventStore.  Any insert/update/delete operation will call this method.
-        /// </summary>
-        /// <param name="action"></param>
-        /// <returns></returns>
-        public WalConfigurationBuilder On(Action<object> action) {
-            _actions.Add(new ActionHandler(action));
+        public WalConfigurationBuilder OnInsert(Action<object> action) {
+            _insertActions.Add(new ActionHandler(action));
             return this;
         }
 
-        /// <summary>
-        /// Think of this like the $all stream within EventStore.  Any insert/update/delete operation will call this method.
-        /// </summary>
-        /// <param name="action"></param>
-        /// <returns></returns>
-        public WalConfigurationBuilder On<TEvent>(Action<TEvent> action) {
-            _actions.Add(new ActionHandler<TEvent>(action));
+        public WalConfigurationBuilder OnInsert<TEvent>(Action<TEvent> action) {
+            _insertActions.Add(new ActionHandler<TEvent>(action));
+            return this;
+        }
+
+        public WalConfigurationBuilder OnUpdate(Action<object> action) {
+            _updateActions.Add(new ActionHandler(action));
+            return this;
+        }
+
+        public WalConfigurationBuilder OnUpdate<TEvent>(Action<TEvent> action) {
+            _updateActions.Add(new ActionHandler<TEvent>(action));
+            return this;
+        }
+
+        public WalConfigurationBuilder OnDelete(Action<object> action) {
+            _deleteActions.Add(new ActionHandler(action));
+            return this;
+        }
+
+        public WalConfigurationBuilder OnDelete<TEvent>(Action<TEvent> action) {
+            _deleteActions.Add(new ActionHandler<TEvent>(action));
             return this;
         }
 
@@ -77,7 +89,7 @@ namespace PGWalMapper {
             if (string.IsNullOrWhiteSpace(_connectionString)) exceptions.Add(new Exception("Connection string is empty."));
             if (string.IsNullOrWhiteSpace(_publicationName)) exceptions.Add(new Exception("Publication name has not been set."));
             if (string.IsNullOrWhiteSpace(_slotName)) exceptions.Add(new Exception("Slot name has not been set."));
-            if (_actions.Count == 0) exceptions.Add(new Exception("No actions have been defined."));
+            if (_insertActions.Count == 0) exceptions.Add(new Exception("No actions have been defined."));
             if (_classMaps.Count == 0) exceptions.Add(new Exception("No classes have been mapped."));
 
             foreach (var cm in _classMaps) {
@@ -94,7 +106,9 @@ namespace PGWalMapper {
                 _publicationName,
                 _slotName,
                 builders,
-                _actions
+                _insertActions,
+                _updateActions,
+                _deleteActions
             );
         }
     }

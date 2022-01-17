@@ -86,8 +86,18 @@ namespace PGWalMapper {
         /// </summary>
         /// <param name="action"></param>
         /// <returns></returns>
-        public ClassMapping<TEvent> On(Action<TEvent> action) {
-            _builder.On(action);
+        public ClassMapping<TEvent> OnInsert(Action<TEvent> action) {
+            _builder.OnInsert(action);
+            return _classMapping;
+        }
+
+        public ClassMapping<TEvent> OnUpdate(Action<TEvent> action) {
+            _builder.OnUpdate(action);
+            return _classMapping;
+        }
+
+        public ClassMapping<TEvent> OnDelete(Action<TEvent> action) {
+            _builder.OnDelete(action);
             return _classMapping;
         }
 
