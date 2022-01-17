@@ -1,10 +1,11 @@
 namespace PGWalMapper {
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using Microsoft.Extensions.Logging;
 
     using Npgsql.Replication;
     using Npgsql.Replication.PgOutput;
@@ -19,6 +20,7 @@ namespace PGWalMapper {
         private readonly IEnumerable<ActionHandler> _insertActions;
         private readonly IEnumerable<ActionHandler> _updateActions;
         private readonly IEnumerable<ActionHandler> _deleteActions;
+        private readonly ILogger _logger;
 
         internal WalListener(LogicalReplicationConnection connection,
             string publicationName,
@@ -26,7 +28,8 @@ namespace PGWalMapper {
             IEnumerable<InstanceConstructor> instanceConstructors,
             IEnumerable<ActionHandler> insertActions,
             IEnumerable<ActionHandler> updateActions,
-            IEnumerable<ActionHandler> deleteActions) {
+            IEnumerable<ActionHandler> deleteActions,
+            ILogger logger) {
             _connection = connection;
             _instanceConstructors = instanceConstructors;
             _publicationName = publicationName;
@@ -34,6 +37,7 @@ namespace PGWalMapper {
             _insertActions = insertActions.ToArray();
             _updateActions = updateActions.ToArray();
             _deleteActions = deleteActions.ToArray();
+            _logger = logger;
         }
 
         public void Connect() {
@@ -60,7 +64,7 @@ namespace PGWalMapper {
                                         _deleteActions.Where(a => a.CanHandle(ic)).Apply(a => a.Handle(ic));
                                         break;
                                     default:
-                                        Console.WriteLine("Unknown Wal message type.  No callbacks exist.");
+                                        _logger.LogWarning("No callback handlers have been created for '{@MessageType}'", msg.GetType().Name);
                                         break;
                                 }
                             }

@@ -3,10 +3,13 @@ namespace PGWalMapper {
     using System.Collections.Generic;
     using System.Linq;
 
+    using Microsoft.Extensions.Logging;
+
     using Npgsql.Replication;
 
     public class WalConfigurationBuilder {
         private readonly string _connectionString;
+        private readonly ILogger _logger;
         private string _publicationName;
         private string _slotName;
         private readonly Dictionary<Type, IClassMapping> _classMaps = new();
@@ -14,8 +17,9 @@ namespace PGWalMapper {
         private readonly HashSet<ActionHandler> _updateActions = new();
         private readonly HashSet<ActionHandler> _deleteActions = new();
 
-        public WalConfigurationBuilder(string connectionString) {
+        public WalConfigurationBuilder(string connectionString, ILogger logger) {
             _connectionString = connectionString;
+            _logger = logger;
         }
 
         /// <summary>
@@ -99,7 +103,7 @@ namespace PGWalMapper {
             if (exceptions.Count == 1) throw exceptions.First();
             if (exceptions.Count > 1) throw new AggregateException(exceptions);
 
-            var builders = _classMaps.Select(cm => new InstanceConstructor(cm.Key, cm.Value, null));
+            var builders = _classMaps.Select(cm => new InstanceConstructor(cm.Key, cm.Value, _logger));
 
             return new WalListener(
                 new LogicalReplicationConnection(_connectionString),
@@ -108,7 +112,8 @@ namespace PGWalMapper {
                 builders,
                 _insertActions,
                 _updateActions,
-                _deleteActions
+                _deleteActions,
+                _logger
             );
         }
     }
