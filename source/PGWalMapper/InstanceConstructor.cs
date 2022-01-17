@@ -11,7 +11,7 @@ namespace PGWalMapper {
     using Npgsql.Replication.PgOutput;
     using Npgsql.Replication.PgOutput.Messages;
 
-    public class InstanceConstructor {
+    internal class InstanceConstructor {
         private readonly bool _createInstanceWithConstructorArgs;
         private readonly List<string> _parameterNames = new();
         private readonly ILogger _logger;

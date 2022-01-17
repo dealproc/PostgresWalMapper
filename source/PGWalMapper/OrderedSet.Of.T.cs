@@ -2,7 +2,7 @@ namespace PGWalMapper {
     using System.Collections;
     using System.Collections.Generic;
 
-    public class OrderedSet<T> : ICollection<T> {
+    internal class OrderedSet<T> : ICollection<T> {
         private readonly IDictionary<T, LinkedListNode<T>> m_Dictionary;
         private readonly LinkedList<T> m_LinkedList;
 

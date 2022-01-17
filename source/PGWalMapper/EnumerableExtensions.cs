@@ -4,7 +4,7 @@ namespace PGWalMapper {
     using System.Linq;
     using System.Threading.Tasks;
 
-    public static class EnumerableExtensions {
+    internal static class EnumerableExtensions {
         public static IEnumerable<T> Apply<T>(this IEnumerable<T> items, Action<T> method) {
             foreach (var item in items) {
                 method.Invoke(item);
