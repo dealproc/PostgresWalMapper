@@ -17,6 +17,8 @@ namespace FluentConfiguration {
         }
 
         public void Start() {
+            var options = new JsonSerializerOptions { IncludeFields = true };
+            
             _listener = new WalConfigurationBuilder("Host=127.0.0.1;Port=5432;Database=postgres;username=postgres;password=mysecretpassword;", _loggerFactory.CreateLogger<WalListener>())
                 .ForPublication("films_pub").UsingSlot("films_slot")
                 .OnInsert(o => _logger.LogInformation("'Object' OnInsert called."))
@@ -29,16 +31,16 @@ namespace FluentConfiguration {
                 .Column("did").ToProperty(prop => prop.Did)
                 .Column("date_prod").ToProperty(prop => prop.DateProduced)
                 .Column("kind").ToProperty(prop => prop.Kind)
-                .OnInsert(o => _logger.LogInformation($"Insert: {JsonSerializer.Serialize(o)}"))
-                .OnUpdate(o => _logger.LogWarning($"Update: {JsonSerializer.Serialize(o)}"))
-                .OnDelete(o => _logger.LogCritical($"Delete: {JsonSerializer.Serialize(o)}"))
+                .OnInsert(o => _logger.LogInformation($"Insert: {JsonSerializer.Serialize(o, options)}"))
+                .OnUpdate(o => _logger.LogWarning($"Update: {JsonSerializer.Serialize(o, options)}"))
+                .OnDelete(o => _logger.LogCritical($"Delete: {JsonSerializer.Serialize(o, options)}"))
                 
                 .Map<AggregateMsgs.Distributors>().ToTable("distributors").InSchema("public")
                 .Column("did").ToProperty(prop => prop.Did)
                 .Column("name").ToProperty(prop=> prop.Name)
-                .OnInsert(o=> _logger.LogInformation($"Insert: {JsonSerializer.Serialize(o)}"))
-                .OnUpdate(o => _logger.LogWarning($"Update: {JsonSerializer.Serialize(o)}"))
-                .OnDelete(o => _logger.LogCritical($"Delete: {JsonSerializer.Serialize(o)}"))
+                .OnInsert(o=> _logger.LogInformation($"Insert: {JsonSerializer.Serialize(o, options)}"))
+                .OnUpdate(o => _logger.LogWarning($"Update: {JsonSerializer.Serialize(o, options)}"))
+                .OnDelete(o => _logger.LogCritical($"Delete: {JsonSerializer.Serialize(o, options)}"))
              
                 .Build().Connect();
             

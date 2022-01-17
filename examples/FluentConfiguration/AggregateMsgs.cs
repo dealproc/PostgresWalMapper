@@ -5,16 +5,16 @@ namespace FluentConfiguration {
 
     public class AggregateMsgs {
         public class Films {
-            public string Code { get; set; }
-            public string Title { get; set; }
-            public string Did { get; set; }
-            public DateTime DateProduced { get; set; }
-            public string Kind { get; set; }
+            public string Code;
+            public string Title;
+            public string Did;
+            public DateTime DateProduced;
+            public string Kind;
         }
 
         public class Distributors {
-            public int Did { get; set; }
-            public string Name { get; set; }
+            public int Did;
+            public string Name;
         }
     }
 }
