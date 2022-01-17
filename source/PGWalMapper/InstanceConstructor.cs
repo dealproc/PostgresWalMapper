@@ -72,9 +72,9 @@ namespace PGWalMapper {
 
 
         private async Task<object> Parse(RelationMessage rel, ReplicationTuple tuple, CancellationToken token = default) {
-            Console.WriteLine("Entered parsing alg.");
+            _logger.LogTrace("Parsing the relation details");
             if (!rel.Namespace.Equals(_schemaName) || !rel.RelationName.Equals(_tableName)) {
-                //_logger.LogDebug("Could not parse relation message for {@SchemaName} - {@TableName}", _schemaName, _tableName);
+                _logger.LogWarning("Could not parse relation message for {@SchemaName} - {@TableName}", _schemaName, _tableName);
                 return null;
             }
             

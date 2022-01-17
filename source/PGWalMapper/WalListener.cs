@@ -40,7 +40,7 @@ namespace PGWalMapper {
             _logger = logger;
         }
 
-        public void Connect() {
+        public WalListener Connect() {
             _tokenSource = new CancellationTokenSource();
             //TBD: Do we need to hold a reference to the task?
             Task.Run(async () => {
@@ -79,6 +79,8 @@ namespace PGWalMapper {
                     _connection.SetReplicationStatus(msg.WalEnd);
                 }
             }, _tokenSource.Token);
+            
+            return this;
         }
 
         public void Disconnect() {
